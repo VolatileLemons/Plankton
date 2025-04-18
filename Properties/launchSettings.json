@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Plankton": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
