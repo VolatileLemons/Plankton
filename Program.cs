@@ -6,6 +6,9 @@ using System.Net;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.BiDi.Modules.Input;
+using OpenQA.Selenium.Support.UI;
+using OpenQA.Selenium.Chromium;
 
 int maxpostsize = 100;
 
@@ -106,34 +109,21 @@ static string finder(string strSource, string strStart, string strEnd)
     return String.Empty;
 }
 
-/*
-using WebClient client = new WebClient();
-client.Headers.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)");
-Stream data = client.OpenRead(url);
-StreamReader reader = new StreamReader(data);
-string fullsitepull = reader.ReadToEnd();
-
-string post = finder(fullsitepull, "/p/", "/");
-*/
-
 IWebDriver driver = new ChromeDriver();
+driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
+driver.Url = url;
+driver.Manage().Cookies.AddCookie(new OpenQA.Selenium.Cookie("sessionid", "55937637076%3Ap9pcaA0gscI2pI%3A23%3AAYcP60XCF7Hzx5KrSNmoO5IytNsHyWBwmkc9eDHbyA"));
 driver.Navigate().GoToUrl(url);
-//var title2 = driver.Title;
 
 //x1i10hfl xjbqb8w x1ejq31n xd10rxx x1sy0etr x17r0tee x972fbf xcfux6l x1qhh985 xm0m39n x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz _a6hd
 
-//does find class for some reason need to try with single word class on the dom
-
-IWebElement fruit = driver.FindElement(By.XPath("//div[@class='x1i10hfl xjbqb8w x1ejq31n xd10rxx x1sy0etr x17r0tee x972fbf xcfux6l x1qhh985 xm0m39n x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz _a6hd']"));
+IWebElement fruit = driver.FindElement(By.CssSelector("div._ac7v:nth-child(1) > div:nth-child(1) > a:nth-child(1)"));
 
 XElement xmlTree2 = new XElement("Root",
     from el in feed.Elements()
     select el
 );
 Console.WriteLine(xmlTree2);
-//Console.Write(fullsitepull);
-//Console.WriteLine(post);
-//Console.WriteLine(title2);
-Console.Write(fruit.Text);
-
+Console.WriteLine(fruit.GetAttribute("href"));
+Console.ReadLine();
 driver.Quit();
