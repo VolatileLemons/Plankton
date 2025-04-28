@@ -11,10 +11,30 @@ using OpenQA.Selenium.Support.UI;
 using OpenQA.Selenium.Chromium;
 using AngleSharp.Text;
 using System.Diagnostics;
+using System.Net.Http;
+using OpenQA.Selenium.Support.Extensions;
+using System.Text.Json;
 
 StreamReader sr = new StreamReader("default");
+HttpClient client = new HttpClient();
 string[] settings = new string[22];
 int line = 0;
+string currentresponse = "";
+
+async Task httppostimg(string key, Screenshot screenshot)
+{
+    var imageBytes = screenshot.AsByteArray;
+    var bytestring = Convert.ToBase64String(imageBytes);
+    var values = new Dictionary<string, string>
+    {
+        { "image", bytestring }
+    };
+
+    var content = new FormUrlEncodedContent(values);
+    var response = await client.PostAsync("https://api.imgbb.com/1/upload?expiration=15552000&key=" + key, content);
+    var responseString = await response.Content.ReadAsStringAsync();
+    currentresponse = responseString;
+}
 
 while (!sr.EndOfStream)
 {
@@ -80,21 +100,21 @@ XElement feed =
             new XElement("link", link[0]),
             new XElement("description", description[0]),
             new XElement("language", language[0]),
-            new XElement("copyright", copyright[0]),
+            //new XElement("copyright", copyright[0]),
             new XElement("managingEditor", managingEditor[0]),
             new XElement("webMaster", webMaster[0]),
             new XElement("pubDate", pubDate[0]),
-            new XElement("lastBuildDate", lastBuildDate[0]),
-            new XElement("category", category[0]),
+            //new XElement("lastBuildDate", lastBuildDate[0]),
+            //new XElement("category", category[0]),
             new XElement("generator", generator[0]),
             new XElement("docs", docs[0]),
-            new XElement("cloud", cloud[0]),
+            //new XElement("cloud", cloud[0]),
             new XElement("ttl", ttl[0]),
-            new XElement("image"),
-            new XElement("rating", rating[0]),
-            new XElement("textInput", textInput[0]),
-            new XElement("skipHours", skipHours[0]),
-            new XElement("skipDays", skipDays[0])
+            new XElement("image")
+            //new XElement("rating", rating[0]),
+            //new XElement("textInput", textInput[0]),
+            //new XElement("skipHours", skipHours[0]),
+            //new XElement("skipDays", skipDays[0])
         )
     );
 
@@ -121,7 +141,6 @@ for (int i = 0; i < maxpostsize; i++)
     var currentlink = fruits[i].GetAttribute("href");
     var img = fruits[i].FindElement(By.XPath("./child::*[1]/child::*[1]/child::*[1]")).GetAttribute("src");
     driver.Navigate().GoToUrl(currentlink);
-    img = System.Security.SecurityElement.Escape(img);
     title[i + 1] = driver.Title;
     link[i + 1] = currentlink;
     description[i + 1] = driver.FindElement(By.CssSelector("h1._ap3a")).Text;
@@ -137,19 +156,25 @@ for (int i = 0; i < maxpostsize; i++)
             new XElement("title", title[i + 1]),
             new XElement("link", link[i + 1]),
             new XElement("description", description[i + 1]),
-            new XElement("pubDate", pubDate[i + 1]),
-            new XElement("category", category[i + 1]),
-            new XElement("author", author[i + 1]),
-            new XElement("comments", comments[i + 1]),
-            new XElement("guid", guid[i + 1]),
+            //new XElement("pubDate", pubDate[i + 1]),
+            //new XElement("category", category[i + 1]),
+            //new XElement("author", author[i + 1]),
+            //new XElement("comments", comments[i + 1]),
+            //new XElement("guid", guid[i + 1]),
             new XElement("enclosure", enclosure[i + 1]),
             new XElement("source", source[i + 1])
         );
-    item[i].Element("enclosure").SetAttributeValue("url", img);
-    item[i].Element("enclosure").SetAttributeValue("length", "2015912");
-    item[i].Element("enclosure").SetAttributeValue("type", "image/jpeg");
     item[i].Element("source").SetAttributeValue("url", source[i + 1]);
     feed.Element("channel").Add(item[i]);
+
+    driver.Navigate().GoToUrl(img);
+    var imagedata = driver.TakeScreenshot();
+
+    await httppostimg(settings[21], imagedata);
+    var json = JsonDocument.Parse(currentresponse);
+    item[i].Element("enclosure").SetAttributeValue("url", json.RootElement.GetProperty("data").GetProperty("url").GetString());
+    item[i].Element("enclosure").SetAttributeValue("length", json.RootElement.GetProperty("data").GetProperty("size").GetInt32().ToString());
+    item[i].Element("enclosure").SetAttributeValue("type", json.RootElement.GetProperty("data").GetProperty("image").GetProperty("mime").GetString());
 
 }
 
