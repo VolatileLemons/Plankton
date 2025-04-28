@@ -9,59 +9,69 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.BiDi.Modules.Input;
 using OpenQA.Selenium.Support.UI;
 using OpenQA.Selenium.Chromium;
+using AngleSharp.Text;
+using System.Diagnostics;
 
-int maxpostsize = 100;
+StreamReader sr = new StreamReader("default");
+string[] settings = new string[22];
+int line = 0;
 
-string[] title = new string[maxpostsize]; //Used in item
-string[] link = new string[maxpostsize]; //Used in item
-string[] description = new string[maxpostsize]; //Used in item
-string[] language = new string[maxpostsize];
-string[] copyright = new string[maxpostsize];
-string[] managingEditor = new string[maxpostsize];
-string[] webMaster = new string[maxpostsize];
-string[] pubDate = new string[maxpostsize]; //Used in item
-string[] lastBuildDate = new string[maxpostsize];
-string[] category = new string[maxpostsize]; //Used in item
-string[] generator = new string[maxpostsize];
-string[] docs = new string[maxpostsize];
-string[] cloud = new string[maxpostsize];
-string[] ttl = new string[maxpostsize];
-string[] image = new string[maxpostsize];
-string[] rating = new string[maxpostsize];
-string[] textInput = new string[maxpostsize];
-string[] skipHours = new string[maxpostsize];
-string[] skipDays = new string[maxpostsize];
-string[] author = new string[maxpostsize]; //Used in item
-string[] comments = new string[maxpostsize]; //Used in item
-string[] enclosure = new string[maxpostsize]; //Used in item
-string[] guid = new string[maxpostsize]; //Used in item
-string[] source = new string[maxpostsize]; //Used in item
+while (!sr.EndOfStream)
+{
+    settings[line] = sr.ReadLine();
+    line += 1;
+}
+
+int maxpostsize = Int32.Parse(settings[20]); ;
+
+string[] title = new string[maxpostsize + 1]; //Used in item
+string[] link = new string[maxpostsize + 1]; //Used in item
+string[] description = new string[maxpostsize + 1]; //Used in item
+string[] language = new string[1];
+string[] copyright = new string[1];
+string[] managingEditor = new string[1];
+string[] webMaster = new string[1];
+string[] pubDate = new string[maxpostsize + 1]; //Used in item
+string[] lastBuildDate = new string[1];
+string[] category = new string[maxpostsize + 1]; //Used in item
+string[] generator = new string[1];
+string[] docs = new string[1];
+string[] cloud = new string[1];
+string[] ttl = new string[1];
+string[] image = new string[1];
+string[] rating = new string[1];
+string[] textInput = new string[1];
+string[] skipHours = new string[1];
+string[] skipDays = new string[1];
+string[] author = new string[maxpostsize + 1]; //Used in item
+string[] comments = new string[maxpostsize + 1]; //Used in item
+string[] enclosure = new string[maxpostsize + 1]; //Used in item
+string[] guid = new string[maxpostsize + 1]; //Used in item
+string[] source = new string[maxpostsize + 1]; //Used in item
 
 XElement[] item = new XElement[maxpostsize];
 
-StreamReader sr = new StreamReader("default");
+title[0] = settings[0];
+link[0] = settings[1];
+description[0] = settings[2];
+language[0] = settings[3];
+copyright[0] = settings[4];
+managingEditor[0] = settings[5];
+webMaster[0] = settings[6];
+pubDate[0] = settings[7];
+lastBuildDate[0] = settings[8];
+category[0] = settings[9];
+generator[0] = settings[10];
+docs[0] = settings[11];
+cloud[0] = settings[12];
+ttl[0] = settings[13];
+image[0] = settings[14];
+rating[0] = settings[15];
+textInput[0] = settings[16];
+skipHours[0] = settings[17];
+skipDays[0] = settings[18];
 
-title[0] = sr.ReadLine();
-link[0] = sr.ReadLine();
-description[0] = sr.ReadLine();
-language[0] = sr.ReadLine();
-copyright[0] = sr.ReadLine();
-managingEditor[0] = sr.ReadLine();
-webMaster[0] = sr.ReadLine();
-pubDate[0] = sr.ReadLine();
-lastBuildDate[0] = sr.ReadLine();
-category[0] = sr.ReadLine();
-generator[0] = sr.ReadLine();
-docs[0] = sr.ReadLine();
-cloud[0] = sr.ReadLine();
-ttl[0] = sr.ReadLine();
-image[0] = sr.ReadLine();
-rating[0] = sr.ReadLine();
-textInput[0] = sr.ReadLine();
-skipHours[0] = sr.ReadLine();
-skipDays[0] = sr.ReadLine();
-
-string url = sr.ReadLine();
+string url = settings[19];
 
 XElement feed =
     new XElement("rss",
@@ -80,7 +90,7 @@ XElement feed =
             new XElement("docs", docs[0]),
             new XElement("cloud", cloud[0]),
             new XElement("ttl", ttl[0]),
-            new XElement("image", image[0]),
+            new XElement("image"),
             new XElement("rating", rating[0]),
             new XElement("textInput", textInput[0]),
             new XElement("skipHours", skipHours[0]),
@@ -88,26 +98,10 @@ XElement feed =
         )
     );
 
-//feed.Element("channel").Add(item);
-
-//Console.ForegroundColor = ConsoleColor.DarkMagenta;
-
-static string finder(string strSource, string strStart, string strEnd)
-{
-    const int kNotFound = -1;
-
-    var startIdx = strSource.IndexOf(strStart);
-    if (startIdx != kNotFound)
-    {
-        startIdx += strStart.Length;
-        var endIdx = strSource.IndexOf(strEnd, startIdx);
-        if (endIdx > startIdx)
-        {
-            return strSource.Substring(startIdx, endIdx - startIdx);
-        }
-    }
-    return String.Empty;
-}
+feed.SetAttributeValue("version", "2.0");
+feed.Element("channel").Element("image").SetAttributeValue("title", "image");
+feed.Element("channel").Element("image").SetAttributeValue("url", image[0]);
+feed.Element("channel").Element("image").SetAttributeValue("link", image[0]);
 
 IWebDriver driver = new ChromeDriver();
 driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
@@ -115,15 +109,65 @@ driver.Url = url;
 driver.Manage().Cookies.AddCookie(new OpenQA.Selenium.Cookie("sessionid", "55937637076%3Ap9pcaA0gscI2pI%3A23%3AAYcP60XCF7Hzx5KrSNmoO5IytNsHyWBwmkc9eDHbyA"));
 driver.Navigate().GoToUrl(url);
 
-//x1i10hfl xjbqb8w x1ejq31n xd10rxx x1sy0etr x17r0tee x972fbf xcfux6l x1qhh985 xm0m39n x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz _a6hd
+IWebElement[] fruits = new IWebElement[maxpostsize];
 
-IWebElement fruit = driver.FindElement(By.CssSelector("div._ac7v:nth-child(1) > div:nth-child(1) > a:nth-child(1)"));
+for (int i = 0; i < maxpostsize; i++)
+{
+    fruits[i] = driver.FindElement(By.CssSelector("div._ac7v:nth-child(1) > div:nth-child(" + (i + 1).ToString() + ") > a:nth-child(1)"));
+}
 
-XElement xmlTree2 = new XElement("Root",
+for (int i = 0; i < maxpostsize; i++)
+{
+    var currentlink = fruits[i].GetAttribute("href");
+    var img = fruits[i].FindElement(By.XPath("./child::*[1]/child::*[1]/child::*[1]")).GetAttribute("src");
+    driver.Navigate().GoToUrl(currentlink);
+    img = System.Security.SecurityElement.Escape(img);
+    title[i + 1] = driver.Title;
+    link[i + 1] = currentlink;
+    description[i + 1] = driver.FindElement(By.CssSelector("h1._ap3a")).Text;
+    //pubDate[i + 1] = fruits[i].Text;
+    //category[i + 1] = fruits[i].Text;
+    //author[i + 1] = driver.FindElement(By.CssSelector("a._acan")).Text;
+    //comments[i + 1] = fruits[i].Text;
+    //guid[i + 1] = fruits[i].Text;
+    //enclosure[i + 1] = fruits[i].Text;
+    source[i + 1] = url;
+    item[i] =
+        new XElement("item",
+            new XElement("title", title[i + 1]),
+            new XElement("link", link[i + 1]),
+            new XElement("description", description[i + 1]),
+            new XElement("pubDate", pubDate[i + 1]),
+            new XElement("category", category[i + 1]),
+            new XElement("author", author[i + 1]),
+            new XElement("comments", comments[i + 1]),
+            new XElement("guid", guid[i + 1]),
+            new XElement("enclosure", enclosure[i + 1]),
+            new XElement("source", source[i + 1])
+        );
+    item[i].Element("enclosure").SetAttributeValue("url", img);
+    item[i].Element("enclosure").SetAttributeValue("length", "2015912");
+    item[i].Element("enclosure").SetAttributeValue("type", "image/jpeg");
+    item[i].Element("source").SetAttributeValue("url", source[i + 1]);
+    feed.Element("channel").Add(item[i]);
+
+}
+
+static void cleanup(XElement original)
+{
+    original.Descendants()
+   .Where(a => a.IsEmpty || String.IsNullOrWhiteSpace(a.Value))
+   .Remove();
+}
+
+//cleanup(feed);
+
+XElement xmlTree2 = new XElement("rss",
     from el in feed.Elements()
     select el
 );
+xmlTree2.SetAttributeValue("version", "2.0");
 Console.WriteLine(xmlTree2);
-Console.WriteLine(fruit.GetAttribute("href"));
 Console.ReadLine();
+
 driver.Quit();
