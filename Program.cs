@@ -17,7 +17,7 @@ using System.Text.Json;
 
 StreamReader sr = new StreamReader("default");
 HttpClient client = new HttpClient();
-string[] settings = new string[22];
+string[] settings = new string[23];
 int line = 0;
 string currentresponse = "";
 
@@ -109,8 +109,8 @@ XElement feed =
             new XElement("generator", generator[0]),
             new XElement("docs", docs[0]),
             //new XElement("cloud", cloud[0]),
-            new XElement("ttl", ttl[0]),
-            new XElement("image")
+            new XElement("ttl", ttl[0])
+            //new XElement("image")
             //new XElement("rating", rating[0]),
             //new XElement("textInput", textInput[0]),
             //new XElement("skipHours", skipHours[0]),
@@ -119,9 +119,9 @@ XElement feed =
     );
 
 feed.SetAttributeValue("version", "2.0");
-feed.Element("channel").Element("image").SetAttributeValue("title", "image");
-feed.Element("channel").Element("image").SetAttributeValue("url", image[0]);
-feed.Element("channel").Element("image").SetAttributeValue("link", image[0]);
+//feed.Element("channel").Element("image").SetAttributeValue("title", "image");
+//feed.Element("channel").Element("image").SetAttributeValue("url", image[0]);
+//feed.Element("channel").Element("image").SetAttributeValue("link", image[0]);
 
 IWebDriver driver = new ChromeDriver();
 driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
@@ -130,18 +130,26 @@ driver.Manage().Cookies.AddCookie(new OpenQA.Selenium.Cookie("sessionid", "55937
 driver.Navigate().GoToUrl(url);
 
 IWebElement[] fruits = new IWebElement[maxpostsize];
-
-for (int i = 0; i < maxpostsize; i++)
+int maxpostx = 3;
+int maxposty = maxpostsize / maxpostx;
+string[] fruitlink = new string[maxpostsize];
+string[] fruitimg = new string[maxpostsize];
+for (int i = 0; i < (maxposty); i++)
 {
-    fruits[i] = driver.FindElement(By.CssSelector("div._ac7v:nth-child(1) > div:nth-child(" + (i + 1).ToString() + ") > a:nth-child(1)"));
+    for (int i2 = 0; i2 < maxpostx; i2++)
+    {
+        fruits[(i * 3) + i2] = driver.FindElement(By.CssSelector("div._ac7v:nth-child(" + (i + 1).ToString() + ") > div:nth-child(" + (i2 + 1).ToString() + ") > a:nth-child(1)"));
+        fruitlink[(i * 3) + i2] = fruits[(i * 3) + i2].GetAttribute("href");
+        fruitimg[(i * 3) + i2] = fruits[(i * 3) + i2].FindElement(By.XPath("./child::*[1]/child::*[1]/child::*[1]")).GetAttribute("src");
+
+    }
 }
-
 for (int i = 0; i < maxpostsize; i++)
 {
-    var currentlink = fruits[i].GetAttribute("href");
-    var img = fruits[i].FindElement(By.XPath("./child::*[1]/child::*[1]/child::*[1]")).GetAttribute("src");
+    var currentlink = fruitlink[i];
+    var img = fruitimg[i];
     driver.Navigate().GoToUrl(currentlink);
-    title[i + 1] = driver.Title;
+    title[i + 1] = title[0];
     link[i + 1] = currentlink;
     description[i + 1] = driver.FindElement(By.CssSelector("h1._ap3a")).Text;
     //pubDate[i + 1] = fruits[i].Text;
@@ -184,9 +192,10 @@ static void cleanup(XElement original)
    .Where(a => a.IsEmpty || String.IsNullOrWhiteSpace(a.Value))
    .Remove();
 }
-
 //cleanup(feed);
 
+feed.Save(settings[22] + settings[0] + ".xml");
+/*
 XElement xmlTree2 = new XElement("rss",
     from el in feed.Elements()
     select el
@@ -194,5 +203,5 @@ XElement xmlTree2 = new XElement("rss",
 xmlTree2.SetAttributeValue("version", "2.0");
 Console.WriteLine(xmlTree2);
 Console.ReadLine();
-
+*/
 driver.Quit();
