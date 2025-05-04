@@ -21,4 +21,7 @@
     Text Input: Unused
     Skip Hours: Hours to skip checking for updates
     Skip Days: Days to skip checking for updates
-    
+    Instagram Account: Link to the Instagram account to create a feed for
+    Max Posts: 1-12 (more than 12 unsupported)
+    IMGBB API KEY: http://api.imgbb.com/
+    Output Directory: End location of XML file
